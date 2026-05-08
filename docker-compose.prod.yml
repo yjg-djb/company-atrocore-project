@@ -1,0 +1,37 @@
+services:
+  web:
+    ports: []
+    networks:
+      - proxy
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${PROXY_PRODUCTION_ROUTER}.rule=Host(`${PRODUCTION_DOMAIN}`)"
+      - "traefik.http.services.${PROXY_PRODUCTION_ROUTER}.loadbalancer.server.port=80"
+      - "traefik.http.routers.${PROXY_PRODUCTION_ROUTER}.service=${PROXY_PRODUCTION_ROUTER}"
+      - "traefik.http.routers.${PROXY_PRODUCTION_ROUTER}.entrypoints=websecure"
+      - "traefik.http.routers.${PROXY_PRODUCTION_ROUTER}.tls=true"
+      - "traefik.http.routers.${PROXY_PRODUCTION_ROUTER}.tls.certresolver=letencrypt"
+
+  reverse_proxy:
+    image: traefik:v3.6
+    command:
+      - --certificatesResolvers.letencrypt.acme.email=${LETS_ENCRYPT_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/traefik.yml:ro
+      - traefik-certs:/certs
+    networks:
+      - proxy
+
+volumes:
+  traefik-certs:
+
+networks:
+  proxy:
+    name: proxy
+    external: false

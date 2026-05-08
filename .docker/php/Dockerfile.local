@@ -1,0 +1,23 @@
+FROM atrocore-docker-web:latest AS base
+
+WORKDIR /var/www/localhost
+
+RUN find /var/www/localhost -mindepth 1 -maxdepth 1 \
+    ! -name vendor \
+    ! -name composer.phar \
+    -exec rm -rf {} +
+
+COPY . /var/www/localhost
+
+RUN sed -i 's/\r$//' .docker/startup.sh \
+    && chmod +x .docker/startup.sh \
+    && COMPOSER_ALLOW_SUPERUSER=1 php /var/www/localhost/composer.phar install --no-interaction --prefer-dist --optimize-autoloader \
+    && mkdir -p data/cache data/logs data/migrations upload/files upload/thumbnails \
+    && chown -R www-data:www-data /var/www/localhost
+
+COPY .docker/apache/localhost.conf /etc/apache2/sites-available/localhost.conf
+RUN a2ensite localhost
+
+USER root
+
+CMD ["/var/www/localhost/.docker/startup.sh"]

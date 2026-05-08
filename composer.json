@@ -1,0 +1,35 @@
+{
+    "name": "yjg-djb/company-atrocore-project",
+    "description": "Company AtroCore/AtroPIM project with MyCompany custom module.",
+    "homepage": "https://github.com/yjg-djb/company-atrocore-project",
+    "minimum-stability": "stable",
+    "require": {
+        "atrocore/core": ">=2.2.31 <=2.3.0",
+        "atrocore/export": "*",
+        "atrocore/export-http": "*",
+        "atrocore/import": "*",
+        "atrocore/import-http": "*",
+        "yjg-djb/mycompany-atrocore-module": "*"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packagist.atrocore.com/packages.json?id=common"
+        },
+        {
+            "type": "path",
+            "url": "custom/MyCompany",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "scripts": {
+        "post-update-cmd": "\\Atro\\Composer\\PostUpdate::postUpdate"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}

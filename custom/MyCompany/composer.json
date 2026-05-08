@@ -1,0 +1,24 @@
+{
+    "name": "yjg-djb/mycompany-atrocore-module",
+    "description": "Custom AtroCore module for company-specific business extensions.",
+    "type": "library",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "MyCompany\\": "app/"
+        }
+    },
+    "extra": {
+        "atroId": "MyCompany",
+        "name": {
+            "default": "MyCompany"
+        },
+        "description": {
+            "default": "Project-specific customizations for this AtroCore installation."
+        },
+        "tags": [
+            "custom"
+        ]
+    }
+}

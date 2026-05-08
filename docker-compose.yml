@@ -1,0 +1,39 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE:-.docker/php/Dockerfile.local}
+      target: ${BUILD_VARIANT:-base}
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_PIM_USER: ${POSTGRES_PIM_USER}
+      POSTGRES_PIM_PASSWORD: ${POSTGRES_PIM_PASSWORD}
+      POSTGRES_PIM_DB: ${POSTGRES_PIM_DB}
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - web-data:/var/www/localhost/data
+      - upload-data:/var/www/localhost/upload
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PIM_USER: ${POSTGRES_PIM_USER}
+      POSTGRES_PIM_PASSWORD: ${POSTGRES_PIM_PASSWORD}
+      POSTGRES_PIM_DB: ${POSTGRES_PIM_DB}
+      POSTGRES_PIM_DB_TEST: ${POSTGRES_PIM_DB_TEST:-}
+    volumes:
+      - .docker/postgres/scripts:/docker-entrypoint-initdb.d:ro
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  web-data:
+  upload-data:
+  db-data:
