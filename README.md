@@ -99,6 +99,24 @@ If you run on the local `8081` test port used during scaffolding:
 powershell -ExecutionPolicy Bypass -File .\verification\smoke.ps1 -BaseUrl http://localhost:8081
 ```
 
+## Temporary external demo access
+
+For a temporary external URL without a domain or router port forwarding, run a Cloudflare Quick Tunnel through Docker:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\tunnel-quick.ps1
+```
+
+The script prints a temporary `https://*.trycloudflare.com` URL that forwards to the local Docker `web` service. Keep the tunnel container running while the URL is needed.
+
+Stop the tunnel:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\tunnel-stop.ps1
+```
+
+Before sharing the URL outside your machine, change the default `admin/admin` password. Quick Tunnel URLs are temporary and can change every time the tunnel is restarted.
+
 ## Deployment outline
 
 1. Back up PostgreSQL and uploads.
