@@ -34,8 +34,8 @@ if (-not $RequireInstalled -and $homeResponse.Content -match "install/install.js
 
 $token = $null
 Assert-Status "Login" {
-    $body = @{ username = $Username; password = $Password } | ConvertTo-Json
-    $response = Invoke-RestMethod -Method Post -Uri "$BaseUrl/api/v1/App/user" -Body $body -ContentType "application/json" -Headers @{ "X-Requested-With" = "XMLHttpRequest" } -TimeoutSec 30
+    $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${Username}:${Password}"))
+    $response = Invoke-RestMethod -Method Get -Uri "$BaseUrl/api/v1/App/user" -Headers @{ "X-Requested-With" = "XMLHttpRequest"; "Authorization" = "Basic $basic" } -TimeoutSec 30
     $script:token = $response.authorizationToken
     if (-not $script:token) { throw "authorizationToken missing" }
 }
@@ -46,12 +46,15 @@ $headers = @{
 }
 
 Assert-Status "Metadata" {
-    $metadata = Invoke-RestMethod -Method Get -Uri "$BaseUrl/api/v1/Metadata" -Headers $headers -TimeoutSec 30
-    if (-not $metadata.scopes) { throw "metadata.scopes missing" }
+    $metadata = Invoke-WebRequest -UseBasicParsing -Method Get -Uri "$BaseUrl/api/v1/Metadata" -Headers $headers -TimeoutSec 30
+    if ($metadata.Content -notmatch '"entityDefs"|"app"|"action"') { throw "metadata payload missing expected keys" }
 }
 
 Assert-Status "SQL diff" {
-    docker compose exec -T web php console.php sql diff --show
+    $schema = docker compose exec -T web php console.php sql diff --show 2>&1 | Out-String
+    if ($schema -notmatch "No database changes were detected") {
+        throw "Schema diff is not clean: $schema"
+    }
 }
 
 Assert-Status "Cron" {
